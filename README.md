@@ -1,32 +1,29 @@
 Color By Priority
+==============================
+
 This Kanboard plugin automatically assigns colors to tasks based on their priority level, enhancing visual management of the board.
 
-Features
-Automatic Coloring: Task colors are automatically updated when a task is created or modified.
+Author
+------
 
-Color Code: The plugin applies the following rules defined in the code:
+- laimeilleurzamis
+- License MIT
 
-Priority 0: Green
+Requirements
+------------
 
-Priority 1: Blue
-
-Priority 2: Orange
-
-Priority 3 and above: Red
+- Kanboard >= 1.0.35
 
 Installation
-Download the plugin archive or clone this repository.
+------------
 
-Create a folder named ColorByPriority in the plugins/ directory of your Kanboard installation.
+You have the choice between 3 methods:
 
-Transfer the files into this folder.
+1. Install the plugin from the Kanboard plugin manager in one click
+2. Download the zip file and decompress everything under the directory `plugins/ColorByPriority`
+3. Clone this repository into the folder `plugins/ColorByPriority`
 
-Technical Information
-The plugin uses an event subscriber (PriorityColorSubscriber) that listens to TaskModel::EVENT_CREATE and TaskModel::EVENT_UPDATE events.
 
-It includes a safety mechanism to prevent infinite loops (recursion) when updating the task: the subscriber temporarily removes itself before applying the color change via taskModificationModel, and then re-adds itself.
-
-Author
-Author: laimeilleurzamis
+Note: Plugin folder is case-sensitive.
 
 Version: 1.1.0
