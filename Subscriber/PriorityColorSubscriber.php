@@ -6,8 +6,16 @@ use Kanboard\Event\GenericEvent;
 use Kanboard\Model\TaskModel;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
+/**
+ * PriorityColorSubscriber
+ * * Automatically updates task colors based on their priority level 
+ * * whenever a task is created or updated.
+ */
 class PriorityColorSubscriber implements EventSubscriberInterface
 {
+    /**
+     * Map defining which color corresponds to each priority level.
+     */
     const PRIORITY_MAP = [
         1 => 'blue',
         2 => 'orange',
@@ -15,8 +23,15 @@ class PriorityColorSubscriber implements EventSubscriberInterface
         0 => 'green',
     ];
     
+    /**
+     * Default color for any priority level 4 or higher.
+     */
     const HIGH_PRIORITY_COLOR = 'red'; 
 
+    /**
+     * Bind the subscriber to specific Kanboard task events.
+     * * @return array
+     */
     public static function getSubscribedEvents()
     {
         return [
@@ -25,17 +40,20 @@ class PriorityColorSubscriber implements EventSubscriberInterface
         ];
     }
 
+    /**
+     * Logic to evaluate and apply the correct color to a task.
+     * * @param GenericEvent $event
+     */
     public function updateColor($event)
     {
-        // 1. Récupération de l'ID de la tâche de manière sécurisée
+        // 1. Extract the task ID from the event payload.
         $taskId = isset($event['task_id']) ? $event['task_id'] : (isset($event['id']) ? $event['id'] : null);
 
         if (empty($taskId)) {
             return;
         }
 
-        // 2. On récupère la tâche fraîche depuis la base de données
-        // Cela garantit qu'on a bien la priorité ACTUELLE et la couleur ACTUELLE
+        // 2. Fetch fresh task data from the database to ensure accuracy.
         global $container;
         $task = $container['taskFinderModel']->getById($taskId);
 
@@ -43,7 +61,7 @@ class PriorityColorSubscriber implements EventSubscriberInterface
             return;
         }
 
-        // 3. Détermination de la couleur cible selon la priorité de la tâche
+        // 3. Compare current task priority against the defined color map.
         $priority = (int) $task['priority'];
         $currentColor = $task['color_id'];
         $targetColor = '';
@@ -53,25 +71,25 @@ class PriorityColorSubscriber implements EventSubscriberInterface
         } elseif ($priority >= 4) {
             $targetColor = self::HIGH_PRIORITY_COLOR;
         } else {
-            // Si la priorité n'est pas gérée, on ne touche à rien
+            // Exit if the priority level is not handled by this subscriber.
             return; 
         }
 
-        // 4. Si la couleur est déjà la bonne, on arrête (évite la boucle infinie)
+        // 4. Prevent redundant updates if the task already has the correct color.
         if ($targetColor === $currentColor) {
             return;
         }
 
-        // 5. Mise à jour forcée
-        // On désactive temporairement l'écouteur pour ne pas se rappeler soi-même
+        // 5. Execute the update while preventing an infinite event loop.
+        // Temporarily detach the subscriber before performing the update.
         $container['dispatcher']->removeSubscriber($this);
         
         $container['taskModificationModel']->update([
             'id' => $taskId,
             'color_id' => $targetColor
-        ], false); // false = pas d'événement, mais on a quand même désactivé le subscriber par sécurité
+        ], false);
         
-        // On réactive l'écouteur pour les prochaines fois
+        // Re-attach the subscriber to listen for subsequent events.
         $container['dispatcher']->addSubscriber($this);
     }
 }
