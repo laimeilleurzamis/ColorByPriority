@@ -17,7 +17,7 @@ class PriorityColorSubscriber implements EventSubscriberInterface
      * Map defining which color corresponds to each priority level.
      */
     const PRIORITY_MAP = [
-        1 => 'blue',
+        1 => 'yellow',
         2 => 'orange',
         3 => 'red',
         0 => 'green',

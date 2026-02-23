@@ -18,7 +18,7 @@ class Plugin extends Base
 
     public function getPluginName()
     {
-        return 'Corélation Couleur-Priorité';
+        return 'ColorByPriority';
     }
 
     public function getPluginDescription()
